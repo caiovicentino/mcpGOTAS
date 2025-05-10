@@ -1,3 +1,4 @@
 # Smithery configuration file
 startCommand:
   type: http
+lazyLoading: true
