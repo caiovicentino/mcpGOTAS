@@ -1,0 +1,57 @@
+# Arquivos e diretórios que devem ser ignorados durante a construção da imagem Docker
+
+# Git
+.git
+.gitignore
+.github
+
+# Arquivos de ambiente (exceto templates)
+# .env é copiado explicitamente no Dockerfile
+
+# Arquivos Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Diretórios de ambiente virtual
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+.editorconfig
+
+# Arquivos temporários do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de teste
+test/
+tests/
+test_*.py
+
+# Arquivos de build
+build/
+dist/
+*.egg-info/
+
+# Arquivos de documentação desnecessários para a imagem
+README*.md
+LICENSE
+CHANGELOG.md
+
+# Arquivos de configuração do Smithery (já processados pelo Smithery)
+smithery.yaml
+.smithery.json
+
+# Arquivos Docker
+Dockerfile*
+docker-compose*.yml
