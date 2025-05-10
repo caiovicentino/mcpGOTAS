@@ -1,12 +1,15 @@
-FROM node:16
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copiar todos os arquivos
-COPY . .
+# Copy package files
+COPY package*.json ./
 
-# Instalar dependências
+# Install dependencies
 RUN npm install
+
+# Copy application code
+COPY . .
 
 # Expor porta
 EXPOSE 3000

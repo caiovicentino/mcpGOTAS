@@ -2,3 +2,11 @@ name: "Gotas Commerce Payment Integration"
 description: "Cryptocurrency payment gateway for USDT transactions"
 startCommand:
   type: http
+  configSchema:
+    type: object
+    properties:
+      GOTAS_API_KEY:
+        type: string
+        title: "API Key"
+        description: "Gotas Commerce API Key"
+        default: ""
