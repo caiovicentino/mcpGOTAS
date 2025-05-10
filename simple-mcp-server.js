@@ -107,25 +107,22 @@ const tools = [
 
 // Endpoint MCP para listar ferramentas
 app.get('/mcp', (req, res) => {
-  // Extrair o ID da requisição, se houver
-  const requestId = req.query.id || "1";
-
   if (req.query.action === 'list-tools') {
     // Implementação do lazy loading - listar ferramentas sem autenticação
     // Formato JSON-RPC 2.0
     return res.json({
       jsonrpc: "2.0",
-      id: requestId,
+      id: req.query.id || "1",
       result: {
         tools: tools
       }
     });
   }
 
-  // Resposta padrão para o endpoint MCP no formato JSON-RPC 2.0
+  // Resposta padrão para o endpoint MCP
   res.json({
     jsonrpc: "2.0",
-    id: requestId,
+    id: "1",
     result: {
       name: 'Gotas Commerce',
       description: 'Cryptocurrency payment gateway for USDT transactions',
@@ -136,11 +133,11 @@ app.get('/mcp', (req, res) => {
 
 // Endpoint MCP para executar ferramentas
 app.post('/mcp', (req, res) => {
-  // Extrair o ID da requisição, se houver
+  // Extrair o ID da requisição para usar na resposta
   const requestId = req.body.id || "1";
 
   // Verificar se é uma requisição de listagem de ferramentas do Smithery
-  if (req.body.action === 'list-tools' || req.body.method === 'list-tools' || !req.body.tool) {
+  if (req.body.method === 'list-tools' || req.body.action === 'list-tools' || !req.body.method) {
     // Implementação do lazy loading - listar ferramentas sem autenticação
     // Formato JSON-RPC 2.0
     return res.json({
@@ -152,18 +149,22 @@ app.post('/mcp', (req, res) => {
     });
   }
 
-  const { tool, arguments: args } = req.body;
+  // Para requisições de execução de ferramentas
+  const method = req.body.method || req.body.tool;
+  const params = req.body.params || req.body.arguments || {};
 
   // Verificar se a ferramenta existe
-  const toolDef = tools.find(t => t.name === tool);
+  const toolDef = tools.find(t => t.name === method);
   if (!toolDef) {
-    // Erro no formato JSON-RPC 2.0
     return res.json({
       jsonrpc: "2.0",
       id: requestId,
       error: {
         code: -32601,
-        message: `The tool '${tool}' was not found`
+        message: `Method '${method}' not found`,
+        data: {
+          method: method
+        }
       }
     });
   }
@@ -171,21 +172,22 @@ app.post('/mcp', (req, res) => {
   // Lazy loading - verificar configuração apenas na execução
   const apiKey = process.env.GOTAS_API_KEY || req.smitheryConfig?.GOTAS_API_KEY;
   if (!apiKey) {
-    // Erro no formato JSON-RPC 2.0
     return res.json({
       jsonrpc: "2.0",
       id: requestId,
       error: {
-        code: -32600,
-        message: 'API key is required to execute tools'
+        code: -32000,
+        message: "API key is required to execute tools",
+        data: {
+          method: method
+        }
       }
     });
   }
 
   // Simular execução da ferramenta
-  if (tool === 'create-payment') {
-    const { amount, currency, return_url, description } = args;
-    // Resposta no formato JSON-RPC 2.0
+  if (method === 'create-payment') {
+    const { amount, currency, return_url, description } = params;
     return res.json({
       jsonrpc: "2.0",
       id: requestId,
@@ -204,9 +206,8 @@ app.post('/mcp', (req, res) => {
     });
   }
 
-  if (tool === 'check-payment-status') {
-    const { payment_id } = args;
-    // Resposta no formato JSON-RPC 2.0
+  if (method === 'check-payment-status') {
+    const { payment_id } = params;
     return res.json({
       jsonrpc: "2.0",
       id: requestId,
@@ -223,13 +224,16 @@ app.post('/mcp', (req, res) => {
     });
   }
 
-  // Ferramenta não implementada - erro no formato JSON-RPC 2.0
-  res.json({
+  // Ferramenta não implementada
+  return res.json({
     jsonrpc: "2.0",
     id: requestId,
     error: {
-      code: -32601,
-      message: `The tool '${tool}' is not implemented yet`
+      code: -32000,
+      message: `The method '${method}' is not implemented yet`,
+      data: {
+        method: method
+      }
     }
   });
 });
@@ -250,19 +254,31 @@ app.get('/', (req, res) => {
 // Middleware para lidar com erros
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
+
+  // Extrair o ID da requisição para usar na resposta
+  const requestId = (req.body && req.body.id) || (req.query && req.query.id) || "1";
+
+  // Responder com erro no formato JSON-RPC 2.0
   res.status(500).json({
-    error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message
+    jsonrpc: "2.0",
+    id: requestId,
+    error: {
+      code: -32000,
+      message: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message,
+      data: {
+        type: 'internal_error'
+      }
+    }
   });
 });
 
 // Endpoint MCP para encerrar sessões
 app.delete('/mcp', (req, res) => {
-  // Extrair o ID da requisição, se houver
+  // Extrair o ID da requisição para usar na resposta
   const requestId = req.query.id || "1";
 
-  // Responder no formato JSON-RPC 2.0
-  res.json({
+  // Simplesmente responder com sucesso no formato JSON-RPC 2.0
+  res.status(200).json({
     jsonrpc: "2.0",
     id: requestId,
     result: {
@@ -274,9 +290,20 @@ app.delete('/mcp', (req, res) => {
 
 // Middleware para lidar com rotas não encontradas
 app.use((req, res) => {
+  // Extrair o ID da requisição para usar na resposta
+  const requestId = (req.body && req.body.id) || (req.query && req.query.id) || "1";
+
+  // Responder com erro no formato JSON-RPC 2.0
   res.status(404).json({
-    error: 'Not Found',
-    message: `The requested resource '${req.path}' was not found on this server`
+    jsonrpc: "2.0",
+    id: requestId,
+    error: {
+      code: -32601,
+      message: `The requested resource '${req.path}' was not found on this server`,
+      data: {
+        path: req.path
+      }
+    }
   });
 });
 
