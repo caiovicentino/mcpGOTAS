@@ -23,11 +23,8 @@ load_dotenv()
 GOTAS_API_KEY = os.getenv("GOTAS_API_KEY", "c2d7163f021fd86ea4fcb56f2badbf4c1935a6337d1ca3d960e4fceead8715bb")
 GOTAS_BASE_URL = os.getenv("GOTAS_BASE_URL", "https://commerce.gotas.com").rstrip("/")
 
-# Validate essential environment variables
-if not GOTAS_API_KEY:
-    raise RuntimeError("Environment variable 'GOTAS_API_KEY' is not defined.")
-if not GOTAS_BASE_URL:
-    raise RuntimeError("Environment variable 'GOTAS_BASE_URL' is not defined.")
+# Não validamos as variáveis de ambiente no início para permitir "lazy loading"
+# A validação será feita dentro das funções de ferramenta
 
 # Create FastMCP server
 mcp = FastMCP(name="GotasCommerce")
@@ -44,8 +41,15 @@ async def create_payment(amount: float, currency: str, return_url: str, descript
       return_url (str): URL to redirect customer after payment.
       description (str): Optional description or reference for the payment.
     """
-    url = f"{GOTAS_BASE_URL}/api/v1/payments"
-    headers = {"x-api-key": GOTAS_API_KEY, "Content-Type": "application/json", "Accept": "application/json"}
+    # Lazy loading - verifica as credenciais apenas quando a ferramenta é chamada
+    api_key = GOTAS_API_KEY
+    base_url = GOTAS_BASE_URL
+    
+    if not api_key:
+        return "Error: Gotas Commerce API key is not configured. Please configure GOTAS_API_KEY."
+    
+    url = f"{base_url}/api/v1/payments"
+    headers = {"x-api-key": api_key, "Content-Type": "application/json", "Accept": "application/json"}
     
     # Prepare payment payload
     payload = {
@@ -81,8 +85,15 @@ async def check_payment_status(payment_id: str) -> str:
     Parameters:
       payment_id (str): Identifier of the payment to check.
     """
-    url = f"{GOTAS_BASE_URL}/api/v1/payments/{payment_id}"
-    headers = {"x-api-key": GOTAS_API_KEY, "Accept": "application/json"}
+    # Lazy loading - verifica as credenciais apenas quando a ferramenta é chamada
+    api_key = GOTAS_API_KEY
+    base_url = GOTAS_BASE_URL
+    
+    if not api_key:
+        return "Error: Gotas Commerce API key is not configured. Please configure GOTAS_API_KEY."
+    
+    url = f"{base_url}/api/v1/payments/{payment_id}"
+    headers = {"x-api-key": api_key, "Accept": "application/json"}
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         try:
@@ -120,8 +131,15 @@ async def get_payment_status_resource(payment_id: str) -> str:
     Parameters:
       payment_id (str): The payment ID to check.
     """
-    url = f"{GOTAS_BASE_URL}/api/v1/payments/{payment_id}"
-    headers = {"x-api-key": GOTAS_API_KEY, "Accept": "application/json"}
+    # Lazy loading - verifica as credenciais apenas quando o recurso é acessado
+    api_key = GOTAS_API_KEY
+    base_url = GOTAS_BASE_URL
+    
+    if not api_key:
+        return "Error: Gotas Commerce API key is not configured. Please configure GOTAS_API_KEY."
+    
+    url = f"{base_url}/api/v1/payments/{payment_id}"
+    headers = {"x-api-key": api_key, "Accept": "application/json"}
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         try:
