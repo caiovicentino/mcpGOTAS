@@ -1,16 +1,4 @@
-# Smithery configuration file
 name: "Gotas Commerce Payment Integration"
 description: "Cryptocurrency payment gateway for USDT transactions"
-
-# Configuração de inicialização
 startCommand:
   type: http
-  command: "node server.js"
-
-# Configuração de lazy loading
-lazyLoading: true
-
-# Variáveis de ambiente necessárias
-env:
-  - GOTAS_API_KEY
-  - GOTAS_BASE_URL

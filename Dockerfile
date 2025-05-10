@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:16
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ COPY package.json ./
 COPY package-lock.json* ./
 
 # Instalar dependências
-RUN npm install || (npm init -y && npm install @smithery/sdk@latest)
+RUN npm install
 
 # Copiar o restante dos arquivos
 COPY . .
