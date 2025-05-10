@@ -5,6 +5,14 @@ description: "Cryptocurrency payment gateway for USDT transactions"
 # Configuração de inicialização
 startCommand:
   type: http
+  configSchema:
+    type: object
+    properties:
+      GOTAS_API_KEY:
+        type: string
+        title: "API Key"
+        description: "Gotas Commerce API Key"
+        default: ""
 
 # Configuração de lazy loading
 lazyLoading: true

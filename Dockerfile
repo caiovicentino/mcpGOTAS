@@ -1,9 +1,9 @@
-FROM node:16-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
 # Copiar package.json primeiro para aproveitar o cache do Docker
-COPY package.json ./
+COPY package*.json ./
 
 # Instalar dependências
 RUN npm install --production
