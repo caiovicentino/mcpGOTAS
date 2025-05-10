@@ -4,9 +4,8 @@
   "lazyLoading": true,
   "transport": "http",
   "command": "node",
-  "args": ["simple-mcp-server.js"],
+  "args": ["smithery-mcp-server.js"],
   "mcpEndpoint": "/mcp",
-  "listToolsEndpoint": "/mcp/list-tools",
   "configSchema": {
     "type": "object",
     "properties": {
