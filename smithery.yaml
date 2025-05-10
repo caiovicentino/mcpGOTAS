@@ -1,0 +1,32 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required: ["api_key"]
+    properties:
+      api_key:
+        type: string
+        description: "Gotas Commerce API key"
+      base_url:
+        type: string
+        description: "Base URL for the Gotas Commerce API"
+        default: "https://commerce.gotas.com"
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => {
+      const env = {};
+      if (config.api_key) env.GOTAS_API_KEY = config.api_key;
+      if (config.base_url) env.GOTAS_BASE_URL = config.base_url;
+      
+      return {
+        command: 'python',
+        args: ['-m', 'src.gotas_mcp_server'],
+        env
+      };
+    }
+  exampleConfig:
+    api_key: "YOUR_GOTAS_COMMERCE_API_KEY"
+    base_url: "https://commerce.gotas.com"
