@@ -4,22 +4,24 @@ startCommand:
   configSchema:
     # JSON Schema defining the configuration options for the MCP.
     type: object
-    required: ["api_key"]
+    required:
+      - GOTAS_API_KEY
     properties:
-      api_key:
+      GOTAS_API_KEY:
         type: string
-        description: "Gotas Commerce API key"
-      base_url:
+        description: "API key for the Gotas Commerce payment platform"
+      GOTAS_BASE_URL:
         type: string
-        description: "Base URL for the Gotas Commerce API"
         default: "https://commerce.gotas.com"
+        description: "Base URL for the Gotas Commerce API"
   commandFunction:
     # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
     |-
     (config) => {
-      const env = {};
-      if (config.api_key) env.GOTAS_API_KEY = config.api_key;
-      if (config.base_url) env.GOTAS_BASE_URL = config.base_url;
+      const env = {
+        GOTAS_API_KEY: config.GOTAS_API_KEY,
+        GOTAS_BASE_URL: config.GOTAS_BASE_URL || "https://commerce.gotas.com"
+      };
       
       return {
         command: 'python',
@@ -28,5 +30,4 @@ startCommand:
       };
     }
   exampleConfig:
-    api_key: "YOUR_GOTAS_COMMERCE_API_KEY"
-    base_url: "https://commerce.gotas.com"
+    GOTAS_API_KEY: "your_gotas_commerce_api_key_here"
