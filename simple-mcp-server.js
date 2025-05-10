@@ -1,6 +1,6 @@
 /**
  * Servidor MCP simples para demonstrar o lazy loading
- * 
+ *
  * Este servidor implementa apenas o necessário para listar ferramentas
  * sem autenticação e demonstrar o lazy loading para o Smithery.
  */
@@ -44,6 +44,20 @@ app.use((req, res, next) => {
 // Middleware para logging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+
+  // Log detalhado para requisições ao endpoint MCP
+  if (req.originalUrl.startsWith('/mcp')) {
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+
+    if (req.method === 'POST') {
+      console.log('Body:', JSON.stringify(req.body, null, 2));
+    }
+
+    if (req.query && Object.keys(req.query).length > 0) {
+      console.log('Query:', JSON.stringify(req.query, null, 2));
+    }
+  }
+
   next();
 });
 
@@ -99,7 +113,7 @@ app.get('/mcp', (req, res) => {
       tools: tools
     });
   }
-  
+
   // Resposta padrão para o endpoint MCP
   res.json({
     name: 'Gotas Commerce',
@@ -110,8 +124,16 @@ app.get('/mcp', (req, res) => {
 
 // Endpoint MCP para executar ferramentas
 app.post('/mcp', (req, res) => {
+  // Verificar se é uma requisição de listagem de ferramentas do Smithery
+  if (req.body.action === 'list-tools' || !req.body.tool) {
+    // Implementação do lazy loading - listar ferramentas sem autenticação
+    return res.json({
+      tools: tools
+    });
+  }
+
   const { tool, arguments: args } = req.body;
-  
+
   // Verificar se a ferramenta existe
   const toolDef = tools.find(t => t.name === tool);
   if (!toolDef) {
@@ -120,7 +142,7 @@ app.post('/mcp', (req, res) => {
       message: `The tool '${tool}' was not found`
     });
   }
-  
+
   // Lazy loading - verificar configuração apenas na execução
   const apiKey = process.env.GOTAS_API_KEY || req.smitheryConfig?.GOTAS_API_KEY;
   if (!apiKey) {
@@ -129,7 +151,7 @@ app.post('/mcp', (req, res) => {
       message: 'API key is required to execute tools'
     });
   }
-  
+
   // Simular execução da ferramenta
   if (tool === 'create-payment') {
     const { amount, currency, return_url, description } = args;
@@ -148,7 +170,7 @@ app.post('/mcp', (req, res) => {
       }, null, 2)
     });
   }
-  
+
   if (tool === 'check-payment-status') {
     const { payment_id } = args;
     return res.json({
@@ -164,7 +186,7 @@ app.post('/mcp', (req, res) => {
       }, null, 2)
     });
   }
-  
+
   // Ferramenta não implementada
   res.status(501).json({
     error: 'Not Implemented',
@@ -191,6 +213,15 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     error: 'Internal Server Error',
     message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message
+  });
+});
+
+// Endpoint MCP para encerrar sessões
+app.delete('/mcp', (req, res) => {
+  // Simplesmente responder com sucesso
+  res.status(200).json({
+    success: true,
+    message: 'Session closed successfully'
   });
 });
 
