@@ -1,8 +1,5 @@
 """
-Gotas Commerce MCP Server
-
-Este servidor expõe ferramentas MCP para interagir com a API de pagamentos
-da Gotas Commerce.
+Gotas Commerce MCP Server - Simplificado para Smithery
 """
 
 import os
@@ -10,15 +7,14 @@ import json
 import httpx
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
-# Carregar variáveis de ambiente (mas não exigir)
+# Carregar variáveis de ambiente
 load_dotenv()
 
-# Criar servidor MCP - não executar validação na inicialização
+# Criar servidor MCP
 mcp = FastMCP(name="GotasCommerce")
 
-# Ferramentas MCP com lazy loading
 @mcp.tool(name="create-payment", description="Creates a new payment in the Gotas Commerce API")
 async def create_payment(amount: float, currency: str, return_url: str, description: str = "") -> str:
     """
@@ -98,14 +94,22 @@ async def check_payment_status(payment_id: str) -> str:
 
 # FastAPI app
 app = FastAPI(title="Gotas Commerce MCP Server")
+
+# Montar o servidor MCP na rota /mcp
 app.mount("/mcp", mcp.sse_app())
 
+# Rota para API root
 @app.get("/")
 async def root():
-    return {"message": "Gotas Commerce MCP Server is running", "lazy_loading": True}
+    return {"status": "ok", "message": "Gotas Commerce MCP Server is running"}
 
-
-# Para execução direta
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# Rota para debug
+@app.get("/debug")
+async def debug(request: Request):
+    headers = dict(request.headers)
+    return {
+        "server_info": "Gotas Commerce MCP Server",
+        "env": dict(os.environ),
+        "headers": headers,
+        "lazy_loading": True
+    }
