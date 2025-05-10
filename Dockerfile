@@ -1,22 +1,18 @@
-FROM node:18-alpine
+FROM node:16
 
 WORKDIR /app
 
-# Copiar package.json primeiro para aproveitar o cache do Docker
-COPY package*.json ./
+# Copiar todos os arquivos
+COPY . .
 
 # Instalar dependências
-RUN npm install --production
-
-# Copiar o restante dos arquivos
-COPY . .
+RUN npm install
 
 # Expor porta
 EXPOSE 3000
 
 # Variáveis de ambiente
 ENV PORT=3000
-ENV NODE_ENV=production
 
 # Comando para iniciar o servidor
-CMD ["node", "server.js"]
+CMD ["node", "simple-server.js"]
