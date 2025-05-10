@@ -1,18 +1,3 @@
 # Smithery configuration file
 startCommand:
   type: http
-  configSchema:
-    type: object
-    properties:
-      GOTAS_API_KEY:
-        type: string
-        description: "API key for the Gotas Commerce payment platform"
-      GOTAS_BASE_URL:
-        type: string
-        default: "https://commerce.gotas.com"
-        description: "Base URL for the Gotas Commerce API"
-  exampleConfig:
-    GOTAS_API_KEY: "your_api_key_here"
-
-build:
-  dockerfile: "./Dockerfile"

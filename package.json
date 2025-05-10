@@ -1,0 +1,15 @@
+{
+  "name": "gotas-commerce-mcp",
+  "version": "1.0.0",
+  "description": "Gotas Commerce Payment Integration MCP Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["mcp", "gotas", "commerce", "payment", "cryptocurrency"],
+  "author": "Caio Vicentino",
+  "license": "MIT",
+  "dependencies": {
+    "@smithery/sdk": "latest"
+  }
+}
