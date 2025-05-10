@@ -102,22 +102,79 @@ const port = process.env.PORT || 3000;
 const express = require('express');
 const app = express();
 
-// Montar o servidor MCP no endpoint /mcp
-app.use('/mcp', server.createExpressHandler());
+// Middleware para processar configuração em base64
+app.use((req, res, next) => {
+  if (req.query.config) {
+    try {
+      // Decodificar a configuração em base64
+      const configStr = Buffer.from(req.query.config, 'base64').toString('utf-8');
+      req.smitheryConfig = JSON.parse(configStr);
+      console.log('Smithery config detected and parsed successfully');
+    } catch (error) {
+      console.error('Error parsing Smithery config:', error);
+    }
+  }
+  next();
+});
+
+// Montar o servidor MCP no endpoint /mcp com opções personalizadas
+const mcpHandler = server.createExpressHandler({
+  // Passar a configuração do Smithery para o handler MCP
+  configProvider: (req) => req.smitheryConfig || {},
+  // Habilitar suporte para streaming de eventos
+  streaming: true
+});
+
+// Montar o handler MCP no endpoint /mcp
+app.use('/mcp', mcpHandler);
 
 // Rota raiz para verificação de saúde
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
     message: 'Gotas Commerce MCP Server is running',
+    version: '1.0.0',
+    protocol: 'MCP Streamable HTTP',
     endpoints: {
       mcp: '/mcp'
     }
   });
 });
 
+// Middleware para lidar com erros
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message
+  });
+});
+
+// Middleware para lidar com rotas não encontradas
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: `The requested resource '${req.path}' was not found on this server`
+  });
+});
+
 // Iniciar o servidor Express
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Gotas Commerce MCP Server running on port ${port}`);
   console.log(`MCP endpoint available at: http://localhost:${port}/mcp`);
+});
+
+// Lidar com sinais de encerramento para uma saída limpa
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+  });
 });
