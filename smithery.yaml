@@ -1,10 +1,8 @@
-# Smithery configuration file: https://smithery.ai/docs/config/smithery.yaml
+# Smithery configuration file
 startCommand:
   type: stdio
   configSchema:
     type: object
-    required:
-      - GOTAS_API_KEY
     properties:
       GOTAS_API_KEY:
         type: string
@@ -15,18 +13,17 @@ startCommand:
         description: "Base URL for the Gotas Commerce API"
   commandFunction: |
     (config) => {
-      const env = {};
+      const env = {
+        MCP_LAZY_LOADING: "1",
+        PYTHONUNBUFFERED: "1"
+      };
       
-      // Allow listing tools without authentication
-      // Only add credentials when needed for actual tool calls
       if (config.GOTAS_API_KEY) {
         env.GOTAS_API_KEY = config.GOTAS_API_KEY;
       }
       
       if (config.GOTAS_BASE_URL) {
         env.GOTAS_BASE_URL = config.GOTAS_BASE_URL;
-      } else {
-        env.GOTAS_BASE_URL = "https://commerce.gotas.com";
       }
       
       return {
@@ -36,8 +33,7 @@ startCommand:
       };
     }
   exampleConfig:
-    GOTAS_API_KEY: "your_gotas_commerce_api_key_here"
+    GOTAS_API_KEY: "your_api_key_here"
 
 build:
   dockerfile: "./Dockerfile"
-  dockerBuildPath: "."
