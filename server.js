@@ -3,7 +3,8 @@ const { createServer } = require('@smithery/sdk');
 // Criar servidor MCP
 const server = createServer({
   name: 'Gotas Commerce',
-  description: 'Cryptocurrency payment gateway for USDT transactions'
+  description: 'Cryptocurrency payment gateway for USDT transactions',
+  lazyLoading: true
 });
 
 // Definir as ferramentas
@@ -33,11 +34,11 @@ server.tool({
     // Lazy loading - verificar configuração apenas na execução
     const apiKey = process.env.GOTAS_API_KEY || context.config?.GOTAS_API_KEY;
     const baseUrl = process.env.GOTAS_BASE_URL || context.config?.GOTAS_BASE_URL || 'https://commerce.gotas.com';
-    
+
     if (!apiKey) {
       return "Error: Gotas Commerce API key is not configured. Please configure GOTAS_API_KEY.";
     }
-    
+
     try {
       // Simular resposta bem-sucedida (em ambiente real, faria a chamada HTTP real)
       return JSON.stringify({
@@ -71,11 +72,11 @@ server.tool({
     // Lazy loading - verificar configuração apenas na execução
     const apiKey = process.env.GOTAS_API_KEY || context.config?.GOTAS_API_KEY;
     const baseUrl = process.env.GOTAS_BASE_URL || context.config?.GOTAS_BASE_URL || 'https://commerce.gotas.com';
-    
+
     if (!apiKey) {
       return "Error: Gotas Commerce API key is not configured. Please configure GOTAS_API_KEY.";
     }
-    
+
     try {
       // Simular resposta bem-sucedida (em ambiente real, faria a chamada HTTP real)
       return JSON.stringify({

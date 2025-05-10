@@ -10,6 +10,6 @@
   "author": "Caio Vicentino",
   "license": "MIT",
   "dependencies": {
-    "@smithery/sdk": "latest"
+    "@smithery/sdk": "^0.1.0"
   }
 }
