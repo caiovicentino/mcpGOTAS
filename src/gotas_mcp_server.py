@@ -7,20 +7,18 @@ da Gotas Commerce.
 
 import os
 import json
-import asyncio
-from dotenv import load_dotenv
 import httpx
+from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from fastapi import FastAPI
 
-# Carregar variáveis de ambiente
+# Carregar variáveis de ambiente (mas não exigir)
 load_dotenv()
-GOTAS_API_KEY = os.getenv("GOTAS_API_KEY", "")
-GOTAS_BASE_URL = os.getenv("GOTAS_BASE_URL", "https://commerce.gotas.com").rstrip("/")
 
-# Criar servidor MCP 
+# Criar servidor MCP - não executar validação na inicialização
 mcp = FastMCP(name="GotasCommerce")
 
+# Ferramentas MCP com lazy loading
 @mcp.tool(name="create-payment", description="Creates a new payment in the Gotas Commerce API")
 async def create_payment(amount: float, currency: str, return_url: str, description: str = "") -> str:
     """
@@ -32,10 +30,11 @@ async def create_payment(amount: float, currency: str, return_url: str, descript
       return_url (str): URL to redirect customer after payment.
       description (str): Optional description or reference for the payment.
     """
-    # Verificar credenciais somente na execução da ferramenta (lazy loading)
-    api_key = os.getenv("GOTAS_API_KEY", GOTAS_API_KEY)
-    base_url = os.getenv("GOTAS_BASE_URL", GOTAS_BASE_URL)
+    # Lazy loading - verificar credenciais apenas na chamada da ferramenta
+    api_key = os.getenv("GOTAS_API_KEY")
+    base_url = os.getenv("GOTAS_BASE_URL", "https://commerce.gotas.com").rstrip("/")
     
+    # Verificar credenciais apenas na execução
     if not api_key:
         return "Error: Gotas Commerce API key is not configured. Please configure GOTAS_API_KEY."
     
@@ -73,10 +72,11 @@ async def check_payment_status(payment_id: str) -> str:
     Parameters:
       payment_id (str): Identifier of the payment to check.
     """
-    # Verificar credenciais somente na execução da ferramenta (lazy loading)
-    api_key = os.getenv("GOTAS_API_KEY", GOTAS_API_KEY)
-    base_url = os.getenv("GOTAS_BASE_URL", GOTAS_BASE_URL)
+    # Lazy loading - verificar credenciais apenas na chamada da ferramenta
+    api_key = os.getenv("GOTAS_API_KEY")
+    base_url = os.getenv("GOTAS_BASE_URL", "https://commerce.gotas.com").rstrip("/")
     
+    # Verificar credenciais apenas na execução
     if not api_key:
         return "Error: Gotas Commerce API key is not configured. Please configure GOTAS_API_KEY."
     
@@ -102,7 +102,7 @@ app.mount("/mcp", mcp.sse_app())
 
 @app.get("/")
 async def root():
-    return {"message": "Gotas Commerce MCP Server is running"}
+    return {"message": "Gotas Commerce MCP Server is running", "lazy_loading": True}
 
 
 # Para execução direta
