@@ -15,4 +15,4 @@ EXPOSE 3000
 ENV PORT=3000
 
 # Comando para iniciar o servidor
-CMD ["node", "simple-server.js"]
+CMD ["node", "server.js"]

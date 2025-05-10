@@ -12,7 +12,7 @@
   "author": "Caio Vicentino",
   "license": "MIT",
   "dependencies": {
-    "@smithery/sdk": "^0.1.0",
+    "@smithery/sdk": "latest",
     "express": "^4.18.2",
     "dotenv": "^16.3.1"
   },
