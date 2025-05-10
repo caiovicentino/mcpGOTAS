@@ -6,6 +6,18 @@ description: "Cryptocurrency payment gateway for USDT transactions"
 startCommand:
   type: http
   command: "node server.js"
+  configSchema:
+    type: object
+    properties:
+      GOTAS_API_KEY:
+        type: string
+        title: "API Key"
+        description: "Gotas Commerce API Key"
+      GOTAS_BASE_URL:
+        type: string
+        title: "API Base URL"
+        description: "Gotas Commerce API Base URL"
+        default: "https://commerce.gotas.com"
 
 # Configuração de lazy loading
 lazyLoading: true

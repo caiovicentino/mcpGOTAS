@@ -1,14 +1,14 @@
 const { createServer } = require('@smithery/sdk');
 
 // Criar servidor MCP
-const server = createServer({
+const mcpServer = createServer({
   name: 'Gotas Commerce',
   description: 'Cryptocurrency payment gateway for USDT transactions',
   lazyLoading: true
 });
 
 // Definir as ferramentas
-server.tool({
+mcpServer.tool({
   name: 'create-payment',
   description: 'Creates a new payment in the Gotas Commerce API',
   parameters: {
@@ -59,7 +59,7 @@ server.tool({
   }
 });
 
-server.tool({
+mcpServer.tool({
   name: 'check-payment-status',
   description: 'Checks the status of an existing payment',
   parameters: {
@@ -102,6 +102,24 @@ const port = process.env.PORT || 3000;
 const express = require('express');
 const app = express();
 
+// Middleware para processar JSON e aumentar o limite de tamanho
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Middleware para CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Mcp-Session-Id');
+
+  // Responder imediatamente às solicitações OPTIONS
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
 // Middleware para processar configuração em base64
 app.use((req, res, next) => {
   if (req.query.config) {
@@ -112,13 +130,23 @@ app.use((req, res, next) => {
       console.log('Smithery config detected and parsed successfully');
     } catch (error) {
       console.error('Error parsing Smithery config:', error);
+      // Não falhar completamente, apenas logar o erro
     }
+  } else {
+    // Garantir que sempre temos um objeto de configuração, mesmo que vazio
+    req.smitheryConfig = {};
   }
   next();
 });
 
+// Middleware para logging de requisições
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Montar o servidor MCP no endpoint /mcp com opções personalizadas
-const mcpHandler = server.createExpressHandler({
+const mcpHandler = mcpServer.createExpressHandler({
   // Passar a configuração do Smithery para o handler MCP
   configProvider: (req) => req.smitheryConfig || {},
   // Habilitar suporte para streaming de eventos
@@ -159,7 +187,7 @@ app.use((req, res) => {
 });
 
 // Iniciar o servidor Express
-const server = app.listen(port, () => {
+const httpServer = app.listen(port, () => {
   console.log(`Gotas Commerce MCP Server running on port ${port}`);
   console.log(`MCP endpoint available at: http://localhost:${port}/mcp`);
 });
@@ -167,14 +195,14 @@ const server = app.listen(port, () => {
 // Lidar com sinais de encerramento para uma saída limpa
 process.on('SIGTERM', () => {
   console.log('SIGTERM signal received: closing HTTP server');
-  server.close(() => {
+  httpServer.close(() => {
     console.log('HTTP server closed');
   });
 });
 
 process.on('SIGINT', () => {
   console.log('SIGINT signal received: closing HTTP server');
-  server.close(() => {
+  httpServer.close(() => {
     console.log('HTTP server closed');
   });
 });
