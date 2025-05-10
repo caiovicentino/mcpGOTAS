@@ -27,6 +27,11 @@ app.use((req, res, next) => {
 
 // Middleware para processar configuração em base64
 app.use((req, res, next) => {
+  // Definir timeout para a resposta
+  res.setTimeout(5000, () => {
+    console.log('Resposta atingiu timeout');
+  });
+
   if (req.query.config) {
     try {
       const configStr = Buffer.from(req.query.config, 'base64').toString('utf-8');
@@ -105,9 +110,13 @@ const tools = [
   }
 ];
 
-// Endpoint MCP para listar ferramentas
+// Endpoint MCP para listar ferramentas - resposta rápida para evitar timeout
 app.get('/mcp', (req, res) => {
+  console.log('GET /mcp - Query:', req.query);
+
+  // Responder imediatamente para evitar timeout
   if (req.query.action === 'list-tools') {
+    console.log('Listando ferramentas via GET');
     // Implementação do lazy loading - listar ferramentas sem autenticação
     // Formato JSON-RPC 2.0
     return res.json({
@@ -133,11 +142,14 @@ app.get('/mcp', (req, res) => {
 
 // Endpoint MCP para executar ferramentas
 app.post('/mcp', (req, res) => {
+  console.log('POST /mcp - Body:', JSON.stringify(req.body));
+
   // Extrair o ID da requisição para usar na resposta
   const requestId = req.body.id || "1";
 
   // Verificar se é uma requisição de listagem de ferramentas do Smithery
   if (req.body.method === 'list-tools' || req.body.action === 'list-tools' || !req.body.method) {
+    console.log('Listando ferramentas via POST');
     // Implementação do lazy loading - listar ferramentas sem autenticação
     // Formato JSON-RPC 2.0
     return res.json({
@@ -238,6 +250,20 @@ app.post('/mcp', (req, res) => {
   });
 });
 
+// Endpoint específico para o Smithery listar ferramentas
+app.get('/mcp/list-tools', (req, res) => {
+  console.log('GET /mcp/list-tools - Endpoint específico para Smithery');
+
+  // Responder imediatamente para evitar timeout
+  return res.json({
+    jsonrpc: "2.0",
+    id: req.query.id || "1",
+    result: {
+      tools: tools
+    }
+  });
+});
+
 // Rota raiz para verificação de saúde
 app.get('/', (req, res) => {
   res.json({
@@ -246,7 +272,8 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     protocol: 'MCP Streamable HTTP',
     endpoints: {
-      mcp: '/mcp'
+      mcp: '/mcp',
+      list_tools: '/mcp/list-tools'
     }
   });
 });

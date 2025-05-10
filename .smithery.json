@@ -5,6 +5,8 @@
   "transport": "http",
   "command": "node",
   "args": ["simple-mcp-server.js"],
+  "mcpEndpoint": "/mcp",
+  "listToolsEndpoint": "/mcp/list-tools",
   "configSchema": {
     "type": "object",
     "properties": {
@@ -21,5 +23,47 @@
         "default": "https://commerce.gotas.com"
       }
     }
-  }
+  },
+  "tools": [
+    {
+      "name": "create-payment",
+      "description": "Creates a new payment in the Gotas Commerce API",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Payment amount (e.g., 100.50)"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code (e.g., \"USDT\")"
+          },
+          "return_url": {
+            "type": "string",
+            "description": "URL to redirect customer after payment"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the payment"
+          }
+        },
+        "required": ["amount", "currency", "return_url"]
+      }
+    },
+    {
+      "name": "check-payment-status",
+      "description": "Checks the status of an existing payment",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "payment_id": {
+            "type": "string",
+            "description": "Identifier of the payment to check"
+          }
+        },
+        "required": ["payment_id"]
+      }
+    }
+  ]
 }

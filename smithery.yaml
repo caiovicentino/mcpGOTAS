@@ -18,3 +18,6 @@ startCommand:
         description: "Gotas Commerce API Base URL"
         default: "https://commerce.gotas.com"
 lazyLoading: true
+transport: "http"
+mcpEndpoint: "/mcp"
+listToolsEndpoint: "/mcp/list-tools"
