@@ -1,0 +1,11 @@
+{
+  "name": "mcpgotas",
+  "type": "mcp",
+  "description": "Gotas Commerce Payment Integration MCP Server",
+  "mcp": {
+    "start_command": "python -m src.gotas_mcp_server",
+    "port": 8000,
+    "transport": "sse"
+  },
+  "schema_path": "./smithery.json"
+}

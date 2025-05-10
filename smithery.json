@@ -1,0 +1,169 @@
+{
+  "schema": "1.0",
+  "server": {
+    "name": "Gotas Commerce Payment Integration",
+    "description": "Enable AI assistants to create and verify cryptocurrency payments using USDT through the Gotas Commerce API. Seamlessly generate payment links and check payment statuses via an MCP server compatible with Claude and other assistants. Simplify cryptocurrency payment workflows with direct API and MCP tool access.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Caio Vicentino",
+      "url": "https://github.com/caiovicentino/mcpGOTAS"
+    }
+  },
+  "tools": [
+    {
+      "name": "create-payment",
+      "description": "Creates a new payment in the Gotas Commerce API and returns payment details including URL for customer payment.",
+      "input_schema": {
+        "type": "object",
+        "required": ["amount", "currency", "return_url"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Payment amount (e.g., 250.00)"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code, currently only USDT is supported",
+            "enum": ["USDT"]
+          },
+          "return_url": {
+            "type": "string",
+            "description": "URL to redirect customer after payment completion"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description or reference for the payment"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique payment identifier"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current payment status (pending, completed, failed, expired)",
+            "enum": ["pending", "completed", "failed", "expired"]
+          },
+          "amount": {
+            "type": "string",
+            "description": "Payment amount"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Payment currency"
+          },
+          "payment_url": {
+            "type": "string",
+            "description": "URL to redirect customers to complete payment"
+          },
+          "wallet_address": {
+            "type": "string",
+            "description": "Destination wallet address for the payment"
+          },
+          "expires_at": {
+            "type": "string",
+            "description": "ISO timestamp when the payment expires"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "ISO timestamp when the payment was created"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of what is being paid for"
+          }
+        }
+      }
+    },
+    {
+      "name": "check-payment-status",
+      "description": "Checks the status of an existing payment by ID",
+      "input_schema": {
+        "type": "object",
+        "required": ["payment_id"],
+        "properties": {
+          "payment_id": {
+            "type": "string",
+            "description": "The ID of the payment to check"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique payment identifier"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current payment status (pending, completed, failed, expired)",
+            "enum": ["pending", "completed", "failed", "expired"]
+          },
+          "amount": {
+            "type": "string",
+            "description": "Payment amount"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Payment currency"
+          },
+          "payment_url": {
+            "type": "string",
+            "description": "URL to redirect customers to complete payment"
+          },
+          "wallet_address": {
+            "type": "string",
+            "description": "Destination wallet address for the payment"
+          },
+          "tx_hash": {
+            "type": "string",
+            "description": "Transaction hash for completed payments (null if pending)"
+          },
+          "expires_at": {
+            "type": "string",
+            "description": "ISO timestamp when the payment expires"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "ISO timestamp when the payment was created"
+          },
+          "completed_at": {
+            "type": "string",
+            "description": "ISO timestamp when the payment was completed (null if pending)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of what is being paid for"
+          }
+        }
+      }
+    }
+  ],
+  "authentication": {
+    "type": "api_key",
+    "api_key": {
+      "name": "x-api-key",
+      "in": "header"
+    }
+  },
+  "config": {
+    "type": "object",
+    "required": ["api_key", "base_url"],
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "description": "Your Gotas Commerce API key"
+      },
+      "base_url": {
+        "type": "string",
+        "description": "Base URL for the Gotas Commerce API",
+        "default": "https://commerce.gotas.com"
+      }
+    }
+  }
+}
