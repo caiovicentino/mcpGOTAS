@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production
 
 # Copy application code
 COPY . .
@@ -16,6 +16,7 @@ EXPOSE 3000
 
 # Variáveis de ambiente
 ENV PORT=3000
+ENV NODE_ENV=production
 
 # Comando para iniciar o servidor
-CMD ["node", "server.js"]
+CMD ["node", "simple-mcp-server.js"]

@@ -2,6 +2,8 @@ name: "Gotas Commerce Payment Integration"
 description: "Cryptocurrency payment gateway for USDT transactions"
 startCommand:
   type: http
+  command: "node"
+  args: ["simple-mcp-server.js"]
   configSchema:
     type: object
     properties:
@@ -10,3 +12,9 @@ startCommand:
         title: "API Key"
         description: "Gotas Commerce API Key"
         default: ""
+      GOTAS_BASE_URL:
+        type: string
+        title: "API Base URL"
+        description: "Gotas Commerce API Base URL"
+        default: "https://commerce.gotas.com"
+lazyLoading: true

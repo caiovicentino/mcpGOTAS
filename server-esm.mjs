@@ -1,19 +1,10 @@
-// Importar o SDK do Smithery
-let smitherySDK;
-try {
-  smitherySDK = require('@smithery/sdk');
-} catch (error) {
-  console.error('Erro ao importar @smithery/sdk:', error.message);
-  console.log('Tentando importar com caminho alternativo...');
-  try {
-    smitherySDK = require('@smithery/sdk/dist/index.js');
-  } catch (innerError) {
-    console.error('Falha ao importar com caminho alternativo:', innerError.message);
-    throw new Error('Não foi possível importar o SDK do Smithery. Verifique a instalação.');
-  }
-}
+// Importar o SDK do Smithery usando sintaxe ESM
+import { createServer } from '@smithery/sdk';
+import express from 'express';
+import dotenv from 'dotenv';
 
-const { createServer } = smitherySDK;
+// Carregar variáveis de ambiente
+dotenv.config();
 
 // Criar servidor MCP
 const mcpServer = createServer({
@@ -114,7 +105,6 @@ mcpServer.tool({
 const port = process.env.PORT || 3000;
 
 // Configurar o endpoint /mcp para compatibilidade com Smithery
-const express = require('express');
 const app = express();
 
 // Middleware para processar JSON e aumentar o limite de tamanho

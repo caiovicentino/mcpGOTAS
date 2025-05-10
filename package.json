@@ -5,16 +5,27 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "start:esm": "node server-esm.mjs",
+    "start:simple": "node simple-mcp-server.js",
     "dev": "nodemon server.js",
-    "test": "node test-server.js"
+    "dev:esm": "nodemon server-esm.mjs",
+    "dev:simple": "nodemon simple-mcp-server.js",
+    "test": "node test-server.js",
+    "test:smithery": "node test-smithery.js"
   },
-  "keywords": ["mcp", "gotas", "commerce", "payment", "cryptocurrency"],
+  "keywords": [
+    "mcp",
+    "gotas",
+    "commerce",
+    "payment",
+    "cryptocurrency"
+  ],
   "author": "Caio Vicentino",
   "license": "MIT",
   "dependencies": {
-    "@smithery/sdk": "latest",
-    "express": "^4.18.2",
-    "dotenv": "^16.3.1"
+    "@smithery/sdk": "^1.3.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

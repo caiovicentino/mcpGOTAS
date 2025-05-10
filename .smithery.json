@@ -1,0 +1,25 @@
+{
+  "name": "Gotas Commerce Payment Integration",
+  "description": "Cryptocurrency payment gateway for USDT transactions",
+  "lazyLoading": true,
+  "transport": "http",
+  "command": "node",
+  "args": ["simple-mcp-server.js"],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "GOTAS_API_KEY": {
+        "type": "string",
+        "title": "API Key",
+        "description": "Gotas Commerce API Key",
+        "default": ""
+      },
+      "GOTAS_BASE_URL": {
+        "type": "string",
+        "title": "API Base URL",
+        "description": "Gotas Commerce API Base URL",
+        "default": "https://commerce.gotas.com"
+      }
+    }
+  }
+}
