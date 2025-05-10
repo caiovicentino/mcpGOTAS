@@ -97,6 +97,27 @@ server.tool({
 
 // Iniciar o servidor HTTP
 const port = process.env.PORT || 3000;
-server.listen(port, () => {
+
+// Configurar o endpoint /mcp para compatibilidade com Smithery
+const express = require('express');
+const app = express();
+
+// Montar o servidor MCP no endpoint /mcp
+app.use('/mcp', server.createExpressHandler());
+
+// Rota raiz para verificação de saúde
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Gotas Commerce MCP Server is running',
+    endpoints: {
+      mcp: '/mcp'
+    }
+  });
+});
+
+// Iniciar o servidor Express
+app.listen(port, () => {
   console.log(`Gotas Commerce MCP Server running on port ${port}`);
+  console.log(`MCP endpoint available at: http://localhost:${port}/mcp`);
 });
