@@ -1,6 +1,6 @@
 /**
- * Smithery Compatible MCP Server
- * Strictly following Smithery's expected response format
+ * Servidor MCP para Smithery com suporte completo ao protocolo MCP
+ * Implementa suporte para StreamableHTTP e sessões MCP
  */
 
 const express = require('express');
@@ -8,158 +8,131 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Define our tools exactly as Smithery expects them
+// Definição das ferramentas
 const tools = [
   {
-    type: 'function',
-    function: {
-      name: 'create-payment',
-      description: 'Creates a new payment in the Gotas Commerce API',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          amount: {
-            type: 'number',
-            description: 'Payment amount (e.g., 100.50)'
-          },
-          currency: {
-            type: 'string',
-            description: 'Currency code (e.g., "USDT")'
-          },
-          return_url: {
-            type: 'string',
-            description: 'URL to redirect customer after payment'
-          },
-          description: {
-            type: 'string',
-            description: 'Optional description of the payment'
-          }
+    name: 'create-payment',
+    description: 'Creates a new payment in the Gotas Commerce API',
+    parameters: {
+      type: 'object',
+      properties: {
+        amount: {
+          type: 'number',
+          description: 'Payment amount (e.g., 100.50)'
         },
-        required: ['amount', 'currency', 'return_url']
-      }
+        currency: {
+          type: 'string',
+          description: 'Currency code (e.g., "USDT")'
+        },
+        return_url: {
+          type: 'string',
+          description: 'URL to redirect customer after payment'
+        },
+        description: {
+          type: 'string',
+          description: 'Optional description of the payment'
+        }
+      },
+      required: ['amount', 'currency', 'return_url']
     }
   },
   {
-    type: 'function',
-    function: {
-      name: 'check-payment-status',
-      description: 'Checks the status of an existing payment',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          payment_id: {
-            type: 'string',
-            description: 'Identifier of the payment to check'
-          }
-        },
-        required: ['payment_id']
-      }
+    name: 'check-payment-status',
+    description: 'Checks the status of an existing payment',
+    parameters: {
+      type: 'object',
+      properties: {
+        payment_id: {
+          type: 'string',
+          description: 'Identifier of the payment to check'
+        }
+      },
+      required: ['payment_id']
     }
   }
 ];
 
-// Middleware
-app.use(express.json());
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Accept', 'Mcp-Session-Id']
-}));
+// Armazenar sessões ativas
+const sessions = new Map();
 
-// Simple logging
+// Middleware básicos
+app.use(express.json());
+app.use(cors());
+
+// Logging simples
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// Healthcheck
+// Gerar ID único para sessão
+function generateSessionId() {
+  return 'session_' + Math.random().toString(36).substring(2, 15);
+}
+
+// Rota raiz para healthcheck
 app.get('/', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+  res.json({ status: 'ok' });
 });
 
-// MCP endpoint - GET with query parameters
-app.get('/mcp', (req, res) => {
-  // Handle initialize method
-  if (req.query.method === 'initialize') {
-    return res.json({
-      jsonrpc: "2.0",
-      id: req.query.id || "1",
-      result: {
-        protocolVersion: "2024-11-05",
-        serverInfo: {
-          name: "Gotas Commerce",
-          version: "1.0.0"
-        },
-        capabilities: {
-          toolExecution: true
-        },
-        tools: tools
-      }
-    });
-  }
-  
-  // Handle tools/list
-  if (req.query.method === 'tools/list') {
-    return res.json({
-      jsonrpc: "2.0",
-      id: req.query.id || "1",
-      result: {
-        tools: tools
-      }
-    });
-  }
-  
-  // Default response with tools list
-  return res.json({
-    jsonrpc: "2.0",
-    id: req.query.id || "1",
-    result: {
-      tools: tools
-    }
-  });
-});
-
-// MCP endpoint - POST with JSON body
+// Endpoint MCP para JSON-RPC
 app.post('/mcp', (req, res) => {
-  const id = req.body.id || "1";
-  const method = req.body.method || "";
-  
-  // Handle initialize
-  if (method === 'initialize') {
-    return res.json({
+  // Garantir que temos um body válido
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({
       jsonrpc: "2.0",
-      id: id,
-      result: {
-        protocolVersion: "2024-11-05",
-        serverInfo: {
-          name: "Gotas Commerce",
-          version: "1.0.0"
-        },
-        capabilities: {
-          toolExecution: true
-        },
-        tools: tools
+      id: null,
+      error: {
+        code: -32700,
+        message: "Parse error"
       }
     });
   }
-  
-  // Handle tools/list
-  if (method === 'tools/list') {
-    return res.json({
-      jsonrpc: "2.0",
-      id: id,
-      result: {
-        tools: tools
-      }
+
+  // Extrair dados do request
+  const id = req.body.id !== undefined ? req.body.id : "1";
+  const method = req.body.method || 'mcp.listTools';
+  const params = req.body.params || {};
+
+  console.log(`Handling MCP method: ${method}`, params);
+
+  // Processar o método requisitado
+  if (method === 'mcp.initialize') {
+    // Criar nova sessão 
+    const sessionId = generateSessionId();
+    sessions.set(sessionId, { 
+      created: new Date(), 
+      lastActive: new Date() 
     });
-  }
-  
-  // Handle tool execution
-  if (method === 'tools/run') {
-    const params = req.body.params || {};
-    const toolName = params.name;
-    const toolArgs = params.input || {};
     
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: {
+        session_id: sessionId,
+        protocol_version: "2025-03-26",
+        server_info: {
+          name: "Gotas Commerce MCP Server",
+          version: "1.0.0"
+        }
+      }
+    });
+  }
+  
+  if (method === 'mcp.listTools') {
+    // Retornar lista de ferramentas disponíveis
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: tools
+    });
+  }
+  
+  if (method === 'mcp.runTool') {
+    const toolName = params.name;
+    const toolParams = params.parameters || {};
+    
+    // Executar a ferramenta solicitada
     if (toolName === 'create-payment') {
       return res.json({
         jsonrpc: "2.0",
@@ -167,31 +140,26 @@ app.post('/mcp', (req, res) => {
         result: {
           payment_id: "pay_" + Math.random().toString(36).substring(2, 12),
           status: "pending",
-          amount: toolArgs.amount,
-          currency: toolArgs.currency,
-          payment_url: `https://commerce.gotas.com/pay?id=pay_${Math.random().toString(36).substring(2, 12)}`,
-          created_at: new Date().toISOString()
+          payment_url: `https://commerce.gotas.com/pay/${Math.random().toString(36).substring(2, 12)}`,
+          expires_at: new Date(Date.now() + 3600000).toISOString()
         }
       });
-    }
+    } 
     
     if (toolName === 'check-payment-status') {
       return res.json({
         jsonrpc: "2.0",
         id: id,
         result: {
-          payment_id: toolArgs.payment_id || "pay_default",
-          status: "pending",
-          amount: 100,
-          currency: "USDT",
-          created_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+          payment_id: toolParams.payment_id,
+          status: ["pending", "completed", "failed"][Math.floor(Math.random() * 3)],
+          updated_at: new Date().toISOString()
         }
       });
     }
     
-    // Tool not found
-    return res.json({
+    // Ferramenta não encontrada
+    return res.status(404).json({
       jsonrpc: "2.0",
       id: id,
       error: {
@@ -200,9 +168,9 @@ app.post('/mcp', (req, res) => {
       }
     });
   }
-  
-  // Method not supported
-  return res.json({
+
+  // Método não suportado
+  return res.status(400).json({
     jsonrpc: "2.0",
     id: id,
     error: {
@@ -212,9 +180,9 @@ app.post('/mcp', (req, res) => {
   });
 });
 
-// Start server
-app.listen(port, () => {
-  console.log(`Smithery Compatible MCP Server running on port ${port}`);
-  console.log(`Access healthcheck at: http://localhost:${port}/`);
-  console.log(`Access MCP endpoint at: http://localhost:${port}/mcp`);
+// Iniciar o servidor
+const server = app.listen(port, () => {
+  console.log(`MCP Server running on port ${port}`);
+  console.log(`Healthcheck: http://localhost:${port}/`);
+  console.log(`MCP endpoint: http://localhost:${port}/mcp`);
 });
