@@ -1,5 +1,8 @@
 /**
  * Servidor MCP básico para Smithery (compatível com JSON-RPC)
+ *
+ * Implementa o protocolo MCP 2024-11-05 para integração com Smithery
+ * Suporta os métodos initialize e tools/list para scan de ferramentas
  */
 
 const express = require('express');
@@ -63,7 +66,15 @@ app.use((req, res, next) => {
 
 // Rota raiz para healthcheck
 app.get('/', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({
+    status: 'ok',
+    message: 'Gotas Commerce MCP Server is running',
+    version: '1.0.0',
+    protocol: 'MCP 2024-11-05',
+    endpoints: {
+      mcp: '/mcp'
+    }
+  });
 });
 
 // Endpoint MCP - GET

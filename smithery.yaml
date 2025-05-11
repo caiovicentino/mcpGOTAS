@@ -7,3 +7,5 @@ startCommand:
 lazyLoading: true
 transport: "http"
 mcpEndpoint: "/mcp"
+healthcheckEndpoint: "/"
+port: 3000
