@@ -2,12 +2,12 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Instalar dependências
+# Inicializar projeto e instalar dependências
 RUN npm init -y && \
-    npm install express cors
+    npm install express cors --save
 
-# Copiar apenas o necessário
-COPY basic-mcp-server-final.js .
+# Copiar apenas o arquivo do servidor
+COPY smithery-compatible-final.js .
 
 # Expor porta
 EXPOSE 3000
@@ -16,4 +16,4 @@ EXPOSE 3000
 ENV PORT=3000
 
 # Comando para iniciar o servidor
-CMD ["node", "basic-mcp-server-final.js"]
+CMD ["node", "smithery-compatible-final.js"]
