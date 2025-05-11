@@ -129,12 +129,14 @@ app.post('/mcp', (req, res) => {
     });
   }
 
-  if (method === 'mcp.listTools') {
+  if (method === 'mcp.listTools' || method === 'tools/list') {
     // Resposta para listar ferramentas
     return res.json({
       jsonrpc: "2.0",
       id: id,
-      result: tools
+      result: {
+        tools: tools
+      }
     });
   }
 
