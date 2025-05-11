@@ -13,7 +13,7 @@ const tools = [
   {
     name: 'create-payment',
     description: 'Creates a new payment in the Gotas Commerce API',
-    parameters: {
+    inputSchema: {
       type: 'object',
       properties: {
         amount: {
@@ -27,9 +27,27 @@ const tools = [
         return_url: {
           type: 'string',
           description: 'URL to redirect customer after payment'
+        },
+        description: {
+          type: 'string',
+          description: 'Optional description of the payment'
         }
       },
       required: ['amount', 'currency', 'return_url']
+    }
+  },
+  {
+    name: 'check-payment-status',
+    description: 'Checks the status of an existing payment',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        payment_id: {
+          type: 'string',
+          description: 'Identifier of the payment to check'
+        }
+      },
+      required: ['payment_id']
     }
   }
 ];
@@ -123,14 +141,34 @@ app.post('/mcp', (req, res) => {
   if (method === 'tools/run') {
     const params = req.body.params || {};
     const toolName = params.name;
-    
+    const toolArgs = params.input || {};
+
     if (toolName === 'create-payment') {
       return res.json({
         jsonrpc: "2.0",
         id: id,
         result: {
           payment_id: "pay_" + Math.random().toString(36).substring(2, 12),
-          status: "pending"
+          status: "pending",
+          amount: toolArgs.amount,
+          currency: toolArgs.currency,
+          payment_url: `https://commerce.gotas.com/pay?id=pay_${Math.random().toString(36).substring(2, 12)}`,
+          created_at: new Date().toISOString()
+        }
+      });
+    }
+
+    if (toolName === 'check-payment-status') {
+      return res.json({
+        jsonrpc: "2.0",
+        id: id,
+        result: {
+          payment_id: toolArgs.payment_id || "pay_default",
+          status: "pending",
+          amount: 100,
+          currency: "USDT",
+          created_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString()
         }
       });
     }
