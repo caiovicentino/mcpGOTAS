@@ -4,7 +4,7 @@
   "lazyLoading": true,
   "transport": "http",
   "command": "node",
-  "args": ["smithery-compatible-server.js"],
+  "args": ["basic-mcp-server.js"],
   "mcpEndpoint": "/mcp",
   "configSchema": {
     "type": "object",

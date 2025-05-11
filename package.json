@@ -11,6 +11,7 @@
     "start:minimal": "node minimal-mcp-server.js",
     "start:jsonrpc": "node jsonrpc-mcp-server.js",
     "start:compatible": "node smithery-compatible-server.js",
+    "start:basic": "node basic-mcp-server.js",
     "dev": "nodemon server.js",
     "dev:esm": "nodemon server-esm.mjs",
     "dev:simple": "nodemon simple-mcp-server.js",
@@ -18,6 +19,7 @@
     "dev:minimal": "nodemon minimal-mcp-server.js",
     "dev:jsonrpc": "nodemon jsonrpc-mcp-server.js",
     "dev:compatible": "nodemon smithery-compatible-server.js",
+    "dev:basic": "nodemon basic-mcp-server.js",
     "test": "node test-server.js",
     "test:smithery": "node test-smithery.js"
   },
