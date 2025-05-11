@@ -77,7 +77,7 @@ app.get('/mcp', (req, res) => {
       jsonrpc: "2.0",
       id: id,
       result: {
-        protocolVersion: "0.1.0",
+        protocolVersion: "2024-11-05",
         serverInfo: {
           name: "Gotas Commerce",
           description: "Cryptocurrency payment gateway for USDT transactions",
@@ -115,7 +115,7 @@ app.post('/mcp', (req, res) => {
       jsonrpc: "2.0",
       id: id,
       result: {
-        protocolVersion: "0.1.0",
+        protocolVersion: "2024-11-05",
         serverInfo: {
           name: "Gotas Commerce",
           description: "Cryptocurrency payment gateway for USDT transactions",
