@@ -1,5 +1,5 @@
 /**
- * Servidor MCP básico para Smithery (versão simplificada)
+ * Servidor MCP básico para Smithery (compatível com JSON-RPC)
  */
 
 const express = require('express');
@@ -68,24 +68,88 @@ app.get('/', (req, res) => {
 
 // Endpoint MCP - GET
 app.get('/mcp', (req, res) => {
+  // Validar e sanitizar o parâmetro ID
+  const id = req.query.id || '1'; // Default to '1' if no ID provided
+  
+  // Estrutura correta para scan de ferramentas
   res.json({
     jsonrpc: "2.0",
-    id: req.query.id || null,
-    result: {
-      tools: tools
-    }
+    id: id,
+    method: "mcp.listTools",
+    params: {}
   });
 });
 
 // Endpoint MCP - POST
 app.post('/mcp', (req, res) => {
-  // Responder sempre com a lista de ferramentas, independente da solicitação
+  // Sanitizar o ID para garantir que seja uma string ou número válido
+  const id = req.body && req.body.id !== undefined ? req.body.id : '1';
+  
+  // Obter método da requisição ou usar o padrão
+  const method = req.body && req.body.method ? req.body.method : 'mcp.listTools';
+  
+  if (method === 'mcp.listTools') {
+    // Resposta para listar ferramentas
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: tools
+    });
+  }
+  
+  if (method === 'mcp.runTool') {
+    const params = req.body && req.body.params ? req.body.params : {};
+    const toolName = params.name;
+    
+    if (toolName === 'create-payment') {
+      return res.json({
+        jsonrpc: "2.0",
+        id: id,
+        result: {
+          payment_id: "pay_" + Math.random().toString(36).substring(2, 12),
+          status: "pending"
+        }
+      });
+    }
+    
+    if (toolName === 'check-payment-status') {
+      return res.json({
+        jsonrpc: "2.0",
+        id: id,
+        result: {
+          status: "pending"
+        }
+      });
+    }
+    
+    // Ferramenta não encontrada
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      error: {
+        code: -32601,
+        message: `Method not found: ${toolName}`
+      }
+    });
+  }
+  
+  // Método não suportado
+  return res.json({
+    jsonrpc: "2.0",
+    id: id,
+    error: {
+      code: -32601,
+      message: `Method not supported: ${method}`
+    }
+  });
+});
+
+// Endpoint MCP - DELETE
+app.delete('/mcp', (req, res) => {
   res.json({
     jsonrpc: "2.0",
-    id: req.body?.id || null,
-    result: {
-      tools: tools
-    }
+    id: "1",
+    result: true
   });
 });
 
@@ -93,3 +157,4 @@ app.post('/mcp', (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
