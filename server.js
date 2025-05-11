@@ -6,7 +6,8 @@ try {
   console.error('Erro ao importar @smithery/sdk:', error.message);
   console.log('Tentando importar com caminho alternativo...');
   try {
-    smitherySDK = require('@smithery/sdk/dist/index.js');
+    // For WSL2 environment
+    smitherySDK = require('@smithery/sdk/dist/server');
   } catch (innerError) {
     console.error('Falha ao importar com caminho alternativo:', innerError.message);
     throw new Error('Não foi possível importar o SDK do Smithery. Verifique a instalação.');
