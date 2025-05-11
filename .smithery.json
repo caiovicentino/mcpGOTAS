@@ -4,7 +4,7 @@
   "lazyLoading": true,
   "transport": "http",
   "command": "node",
-  "args": ["minimal-mcp-server.js"],
+  "args": ["jsonrpc-mcp-server.js"],
   "mcpEndpoint": "/mcp",
   "configSchema": {
     "type": "object",

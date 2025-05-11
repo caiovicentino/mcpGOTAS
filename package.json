@@ -9,11 +9,13 @@
     "start:simple": "node simple-mcp-server.js",
     "start:smithery": "node smithery-mcp-server.js",
     "start:minimal": "node minimal-mcp-server.js",
+    "start:jsonrpc": "node jsonrpc-mcp-server.js",
     "dev": "nodemon server.js",
     "dev:esm": "nodemon server-esm.mjs",
     "dev:simple": "nodemon simple-mcp-server.js",
     "dev:smithery": "nodemon smithery-mcp-server.js",
     "dev:minimal": "nodemon minimal-mcp-server.js",
+    "dev:jsonrpc": "nodemon jsonrpc-mcp-server.js",
     "test": "node test-server.js",
     "test:smithery": "node test-smithery.js"
   },
