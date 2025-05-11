@@ -3,7 +3,7 @@ description: "Cryptocurrency payment gateway for USDT transactions"
 startCommand:
   type: http
   command: "node"
-  args: ["minimal-smithery-server.js"]
+  args: ["smithery-compatible-mcp.js"]
 lazyLoading: true
 transport: "http"
 mcpEndpoint: "/mcp"
