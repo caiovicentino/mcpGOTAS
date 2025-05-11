@@ -70,13 +70,28 @@ app.get('/', (req, res) => {
 app.get('/mcp', (req, res) => {
   // Validar e sanitizar o parâmetro ID
   const id = req.query.id || '1'; // Default to '1' if no ID provided
-  
-  // Estrutura correta para scan de ferramentas
+
+  // Verificar se é uma requisição de inicialização ou listagem de ferramentas
+  if (req.query.method === 'initialize') {
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: {
+        name: "Gotas Commerce",
+        description: "Cryptocurrency payment gateway for USDT transactions",
+        tools: tools,
+        version: "1.0.0"
+      }
+    });
+  }
+
+  // Resposta padrão para scan de ferramentas
   res.json({
     jsonrpc: "2.0",
     id: id,
-    method: "mcp.listTools",
-    params: {}
+    result: {
+      tools: tools
+    }
   });
 });
 
@@ -88,6 +103,20 @@ app.post('/mcp', (req, res) => {
   // Obter método da requisição ou usar o padrão
   const method = req.body && req.body.method ? req.body.method : 'mcp.listTools';
   
+  if (method === 'initialize' || method === 'mcp.initialize') {
+    // Resposta para inicialização
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: {
+        name: "Gotas Commerce",
+        description: "Cryptocurrency payment gateway for USDT transactions",
+        tools: tools,
+        version: "1.0.0"
+      }
+    });
+  }
+
   if (method === 'mcp.listTools') {
     // Resposta para listar ferramentas
     return res.json({
@@ -96,7 +125,7 @@ app.post('/mcp', (req, res) => {
       result: tools
     });
   }
-  
+
   if (method === 'mcp.runTool') {
     const params = req.body && req.body.params ? req.body.params : {};
     const toolName = params.name;
