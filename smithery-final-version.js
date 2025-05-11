@@ -23,7 +23,7 @@ const tools = [
   {
     name: 'create-payment',
     description: 'Creates a new payment in the Gotas Commerce API',
-    inputSchema: {
+    parameters: {
       type: 'object',
       properties: {
         amount: {
@@ -42,7 +42,7 @@ const tools = [
   {
     name: 'check-payment-status',
     description: 'Checks the status of an existing payment',
-    inputSchema: {
+    parameters: {
       type: 'object',
       properties: {
         payment_id: {
@@ -76,7 +76,7 @@ app.get('/', (req, res) => {
 // Endpoint principal do MCP
 app.post('/mcp', (req, res) => {
   console.log('POST /mcp - Body:', JSON.stringify(req.body, null, 2));
-  
+
   if (!req.body || typeof req.body !== 'object') {
     return res.status(400).json({
       jsonrpc: '2.0',
@@ -148,7 +148,7 @@ app.post('/mcp', (req, res) => {
         }
       });
     }
-    
+
     if (toolName === 'check-payment-status') {
       return res.json({
         jsonrpc: '2.0',
@@ -175,10 +175,10 @@ app.post('/mcp', (req, res) => {
 // Endpoint MCP via GET (usando Query Parameters)
 app.get('/mcp', (req, res) => {
   console.log('GET /mcp - Query:', JSON.stringify(req.query, null, 2));
-  
+
   const id = req.query.id || '1';
   const method = req.query.method;
-  
+
   // Se for uma solicitação de listagem de ferramentas
   if (method === 'mcp.listTools' || !method) {
     return res.json({
@@ -187,7 +187,7 @@ app.get('/mcp', (req, res) => {
       result: tools
     });
   }
-  
+
   // Se for uma solicitação de inicialização
   if (method === 'initialize') {
     return res.json({
@@ -202,7 +202,7 @@ app.get('/mcp', (req, res) => {
       }
     });
   }
-  
+
   // Método não suportado via GET
   return res.status(400).json({
     jsonrpc: '2.0',

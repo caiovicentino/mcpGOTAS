@@ -6,11 +6,17 @@ WORKDIR /app
 RUN npm init -y && \
     npm install express cors --save
 
-# Copiar o arquivo do servidor
-COPY smithery-final-version.js .
+# Copiar o arquivo package.json
+COPY package.json .
+
+# Instalar dependências
+RUN npm install --production
+
+# Copiar todos os arquivos
+COPY . .
 
 # Expor porta
 EXPOSE 3000
 
 # Comando para iniciar o servidor
-CMD ["node", "smithery-final-version.js"]
+CMD ["node", "minimal-smithery-server.js"]

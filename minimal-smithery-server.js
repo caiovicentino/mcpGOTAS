@@ -13,7 +13,7 @@ const tools = [
   {
     name: 'create-payment',
     description: 'Creates a new payment in the Gotas Commerce API',
-    inputSchema: {
+    parameters: {
       type: 'object',
       properties: {
         amount: {
@@ -39,7 +39,7 @@ const tools = [
   {
     name: 'check-payment-status',
     description: 'Checks the status of an existing payment',
-    inputSchema: {
+    parameters: {
       type: 'object',
       properties: {
         payment_id: {
@@ -73,124 +73,53 @@ app.get('/', (req, res) => {
 
 // MCP endpoint - GET
 app.get('/mcp', (req, res) => {
-  // Handle initialize method
-  if (req.query.method === 'initialize') {
-    return res.json({
-      jsonrpc: "2.0",
-      id: req.query.id || "1",
-      result: {
-        protocolVersion: "2024-11-05",
-        serverInfo: {
-          name: "Gotas Commerce",
-          version: "1.0.0"
-        },
-        capabilities: {
-          toolExecution: true
-        },
-        tools: tools
-      }
-    });
-  }
-  
-  // Default to tool list
+  console.log('GET /mcp - Listando ferramentas');
+
+  // Responder imediatamente com a lista de ferramentas
   return res.json({
     jsonrpc: "2.0",
     id: req.query.id || "1",
     result: {
-      tools: tools
+      tools: tools,
+      protocolVersion: "2025-03-26",
+      serverInfo: {
+        name: "Gotas Commerce MCP",
+        version: "1.0.0"
+      }
     }
   });
 });
 
 // MCP endpoint - POST
 app.post('/mcp', (req, res) => {
+  console.log('POST /mcp - Body:', JSON.stringify(req.body));
   const id = req.body.id || "1";
-  const method = req.body.method || "";
-  
-  // Handle initialize
-  if (method === 'initialize') {
-    return res.json({
-      jsonrpc: "2.0",
-      id: id,
-      result: {
-        protocolVersion: "2024-11-05",
-        serverInfo: {
-          name: "Gotas Commerce",
-          version: "1.0.0"
-        },
-        capabilities: {
-          toolExecution: true
-        },
-        tools: tools
-      }
-    });
-  }
-  
-  // Handle tools/list
-  if (method === 'tools/list') {
-    return res.json({
-      jsonrpc: "2.0",
-      id: id,
-      result: {
-        tools: tools
-      }
-    });
-  }
-  
-  // Handle tool execution
-  if (method === 'tools/run') {
-    const params = req.body.params || {};
-    const toolName = params.name;
-    const toolArgs = params.input || {};
 
-    if (toolName === 'create-payment') {
-      return res.json({
-        jsonrpc: "2.0",
-        id: id,
-        result: {
-          payment_id: "pay_" + Math.random().toString(36).substring(2, 12),
-          status: "pending",
-          amount: toolArgs.amount,
-          currency: toolArgs.currency,
-          payment_url: `https://commerce.gotas.com/pay?id=pay_${Math.random().toString(36).substring(2, 12)}`,
-          created_at: new Date().toISOString()
-        }
-      });
-    }
-
-    if (toolName === 'check-payment-status') {
-      return res.json({
-        jsonrpc: "2.0",
-        id: id,
-        result: {
-          payment_id: toolArgs.payment_id || "pay_default",
-          status: "pending",
-          amount: 100,
-          currency: "USDT",
-          created_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString()
-        }
-      });
-    }
-    
-    // Tool not found
-    return res.json({
-      jsonrpc: "2.0",
-      id: id,
-      error: {
-        code: -32601,
-        message: `Tool not found: ${toolName}`
-      }
-    });
-  }
-  
-  // Method not supported
+  // Responder imediatamente com a lista de ferramentas
   return res.json({
     jsonrpc: "2.0",
     id: id,
-    error: {
-      code: -32601,
-      message: `Method not supported: ${method}`
+    result: {
+      tools: tools,
+      protocolVersion: "2025-03-26",
+      serverInfo: {
+        name: "Gotas Commerce MCP",
+        version: "1.0.0"
+      }
+    }
+  });
+});
+
+// Endpoint MCP para encerrar sessão
+app.delete('/mcp', (req, res) => {
+  console.log('DELETE /mcp - Encerrando sessão');
+
+  // Responder com sucesso no formato JSON-RPC 2.0
+  res.json({
+    jsonrpc: "2.0",
+    id: "1",
+    result: {
+      success: true
     }
   });
 });
@@ -198,4 +127,5 @@ app.post('/mcp', (req, res) => {
 // Start server
 app.listen(port, () => {
   console.log(`Minimal MCP Server running on port ${port}`);
+  console.log(`MCP endpoint available at: http://localhost:${port}/mcp`);
 });
