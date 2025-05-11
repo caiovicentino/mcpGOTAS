@@ -77,10 +77,16 @@ app.get('/mcp', (req, res) => {
       jsonrpc: "2.0",
       id: id,
       result: {
-        name: "Gotas Commerce",
-        description: "Cryptocurrency payment gateway for USDT transactions",
-        tools: tools,
-        version: "1.0.0"
+        protocolVersion: "0.1.0",
+        serverInfo: {
+          name: "Gotas Commerce",
+          description: "Cryptocurrency payment gateway for USDT transactions",
+          version: "1.0.0"
+        },
+        capabilities: {
+          toolExecution: true
+        },
+        tools: tools
       }
     });
   }
@@ -109,10 +115,16 @@ app.post('/mcp', (req, res) => {
       jsonrpc: "2.0",
       id: id,
       result: {
-        name: "Gotas Commerce",
-        description: "Cryptocurrency payment gateway for USDT transactions",
-        tools: tools,
-        version: "1.0.0"
+        protocolVersion: "0.1.0",
+        serverInfo: {
+          name: "Gotas Commerce",
+          description: "Cryptocurrency payment gateway for USDT transactions",
+          version: "1.0.0"
+        },
+        capabilities: {
+          toolExecution: true
+        },
+        tools: tools
       }
     });
   }
