@@ -4,24 +4,6 @@ startCommand:
   type: http
   command: "node"
   args: ["basic-mcp-server.js"]
-  configSchema:
-    type: object
-    properties:
-      GOTAS_API_KEY:
-        type: string
-        title: "API Key"
-        description: "Gotas Commerce API Key"
-        default: ""
-      GOTAS_BASE_URL:
-        type: string
-        title: "API Base URL"
-        description: "Gotas Commerce API Base URL"
-        default: "https://commerce.gotas.com"
 lazyLoading: true
 transport: "http"
 mcpEndpoint: "/mcp"
-timeout: 60000  # 60 segundos de timeout para requisições
-mcpVersion: "2025-03-26"
-supportedMethods:
-  - "mcp.listTools"
-  - "mcp.runTool"
