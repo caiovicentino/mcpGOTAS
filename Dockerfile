@@ -5,10 +5,9 @@ WORKDIR /app
 # Copiar apenas os arquivos necessários para instalar dependências
 COPY package.json ./
 
-# Instalar dependências, incluindo cors
-RUN npm install --only=production && \
-    npm install cors && \
-    npm cache clean --force
+# Instalar dependências, incluindo cors explicitamente
+RUN npm install express cors || \
+    (npm install && npm install express cors)
 
 # Copiar o resto do código
 COPY . .
@@ -20,9 +19,9 @@ EXPOSE 3000
 ENV PORT=3000
 ENV NODE_ENV=production
 
-# Simplificar o healthcheck para ser mais rápido e confiável
+# Healthcheck simples
 HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
 
-# Comando para iniciar o servidor
-CMD ["node", "basic-mcp-server.js"]
+# Comando para iniciar o servidor simples
+CMD ["node", "simple-smithery-mcp.js"]
