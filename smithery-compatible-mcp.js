@@ -13,7 +13,7 @@ const tools = [
   {
     name: 'create-payment',
     description: 'Creates a new payment in the Gotas Commerce API',
-    parameters: {
+    inputSchema: {
       type: 'object',
       properties: {
         amount: {
@@ -39,7 +39,7 @@ const tools = [
   {
     name: 'check-payment-status',
     description: 'Checks the status of an existing payment',
-    parameters: {
+    inputSchema: {
       type: 'object',
       properties: {
         payment_id: {
@@ -180,9 +180,22 @@ app.post('/mcp', (req, res) => {
   });
 });
 
+// Endpoint GET para debugging
+app.get('/debug', (req, res) => {
+  return res.json({
+    tools: tools,
+    sessions: Array.from(sessions.entries()).map(([id, session]) => ({
+      id,
+      created: session.created,
+      lastActive: session.lastActive
+    }))
+  });
+});
+
 // Iniciar o servidor
 const server = app.listen(port, () => {
   console.log(`MCP Server running on port ${port}`);
   console.log(`Healthcheck: http://localhost:${port}/`);
   console.log(`MCP endpoint: http://localhost:${port}/mcp`);
 });
+
