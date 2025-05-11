@@ -21,3 +21,7 @@ lazyLoading: true
 transport: "http"
 mcpEndpoint: "/mcp"
 timeout: 60000  # 60 segundos de timeout para requisições
+mcpVersion: "2025-03-26"
+supportedMethods:
+  - "mcp.listTools"
+  - "mcp.runTool"

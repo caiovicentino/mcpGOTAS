@@ -60,9 +60,25 @@ app.use(express.json());
 // Middleware para CORS
 app.use(cors());
 
-// Middleware para logging
+// Middleware para logging detalhado
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  const timestamp = new Date().toISOString();
+  console.log(`${timestamp} - ${req.method} ${req.originalUrl}`);
+  
+  // Log do corpo da requisição para debug
+  if (req.method === 'POST' && req.body) {
+    console.log('Request headers:', JSON.stringify(req.headers));
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+  }
+  
+  // Capturar a resposta para debug
+  const originalSend = res.send;
+  res.send = function(body) {
+    console.log('Response status:', res.statusCode);
+    console.log('Response body:', body);
+    return originalSend.call(this, body);
+  };
+  
   next();
 });
 
@@ -71,36 +87,45 @@ app.get('/mcp', (req, res) => {
   console.log('GET /mcp - Listando ferramentas - Query:', req.query);
   
   // Responder com a lista de ferramentas no formato JSON-RPC 2.0
-  // A query parameter "method" pode ser utilizada para determinar o comportamento
-  if (req.query.method === 'mcp.listTools' || !req.query.method) {
-    return res.json({
-      jsonrpc: "2.0",
-      id: req.query.id || "1",
-      result: {
-        tools: tools
-      }
-    });
-  } else {
-    return res.status(400).json({
-      jsonrpc: "2.0",
-      id: req.query.id || "1",
-      error: {
-        code: -32601,
-        message: `Method ${req.query.method} not found`
-      }
-    });
-  }
+  // Versão simplificada que sempre retorna a lista de ferramentas 
+  // independente dos parâmetros
+  return res.json({
+    jsonrpc: "2.0",
+    id: req.query.id || null,
+    result: {
+      tools: tools
+    }
+  });
 });
 
 // Endpoint MCP para executar ferramentas
 app.post('/mcp', (req, res) => {
   console.log('POST /mcp - Body:', JSON.stringify(req.body));
   
+  // Se não houver requisição JSON válida, retorna erro
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({
+      jsonrpc: "2.0",
+      id: null,
+      error: {
+        code: -32700,
+        message: "Parse error"
+      }
+    });
+  }
+
+  // Se não tiver ID, usa null
+  const id = req.body.id !== undefined ? req.body.id : null;
+  
+  // Se o método não for especificado, assume listTools
+  const method = req.body.method || 'mcp.listTools';
+  
   // Verificar se é uma solicitação de lista de ferramentas
-  if (req.body.method === 'mcp.listTools') {
+  if (method === 'mcp.listTools') {
+    console.log('Executando mcp.listTools');
     return res.json({
       jsonrpc: "2.0",
-      id: req.body.id || "1",
+      id: id,
       result: {
         tools: tools
       }
@@ -108,17 +133,17 @@ app.post('/mcp', (req, res) => {
   }
   
   // Se for execução de ferramenta
-  if (req.body.method === 'mcp.runTool') {
+  if (method === 'mcp.runTool') {
     const toolName = req.body.params?.name;
     const toolParams = req.body.params?.parameters || {};
     
-    console.log(`Executing tool: ${toolName} with params:`, toolParams);
+    console.log(`Executando tool: ${toolName} com params:`, toolParams);
     
     // Simular execução de ferramenta (implementação real deve ser adicionada)
     if (toolName === 'create-payment') {
       return res.json({
         jsonrpc: "2.0",
-        id: req.body.id || "1",
+        id: id,
         result: {
           payment_id: "pay_" + Math.random().toString(36).substring(2, 12),
           status: "pending",
@@ -129,7 +154,7 @@ app.post('/mcp', (req, res) => {
     } else if (toolName === 'check-payment-status') {
       return res.json({
         jsonrpc: "2.0",
-        id: req.body.id || "1",
+        id: id,
         result: {
           payment_id: toolParams.payment_id,
           status: ["pending", "completed", "failed"][Math.floor(Math.random() * 3)],
@@ -139,7 +164,7 @@ app.post('/mcp', (req, res) => {
     } else {
       return res.status(404).json({
         jsonrpc: "2.0",
-        id: req.body.id || "1",
+        id: id,
         error: {
           code: -32601,
           message: `Method ${toolName} not found`
@@ -148,13 +173,14 @@ app.post('/mcp', (req, res) => {
     }
   }
   
-  // Método não reconhecido
-  return res.status(400).json({
+  // Se for qualquer outro método do protocolo MCP
+  console.log(`Método não implementado: ${method}`);
+  return res.status(501).json({
     jsonrpc: "2.0",
-    id: req.body.id || "1",
+    id: id,
     error: {
-      code: -32600,
-      message: "Invalid request"
+      code: -32601,
+      message: `Method ${method} not implemented`
     }
   });
 });
@@ -177,7 +203,21 @@ app.delete('/mcp', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Basic MCP Server is running'
+    message: 'Basic MCP Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Rota para debug - mostra informações detalhadas sobre a requisição
+app.all('/debug', (req, res) => {
+  res.json({
+    message: 'Debug information',
+    method: req.method,
+    url: req.originalUrl,
+    headers: req.headers,
+    query: req.query,
+    body: req.body,
+    timestamp: new Date().toISOString()
   });
 });
 
