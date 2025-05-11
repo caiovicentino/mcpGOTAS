@@ -19,4 +19,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando para iniciar o servidor
-CMD ["node", "minimal-smithery-server.js"]
+CMD ["node", "ultra-minimal-server.js"]
