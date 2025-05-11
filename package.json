@@ -13,6 +13,7 @@
     "start:compatible": "node smithery-compatible-server.js",
     "start:basic": "node basic-mcp-server.js",
     "start:ultra": "node ultra-minimal-server.js",
+    "start:final": "node smithery-final-server.js",
     "dev": "nodemon server.js",
     "dev:esm": "nodemon server-esm.mjs",
     "dev:simple": "nodemon simple-mcp-server.js",
@@ -22,6 +23,7 @@
     "dev:compatible": "nodemon smithery-compatible-server.js",
     "dev:basic": "nodemon basic-mcp-server.js",
     "dev:ultra": "nodemon ultra-minimal-server.js",
+    "dev:final": "nodemon smithery-final-server.js",
     "test": "node test-server.js",
     "test:smithery": "node test-smithery.js"
   },
