@@ -24,3 +24,5 @@ build/
 
 # Local configuration
 .env.local
+
+**/.claude/settings.local.json
