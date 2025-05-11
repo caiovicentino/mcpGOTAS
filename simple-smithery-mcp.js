@@ -79,6 +79,24 @@ app.post('/mcp', (req, res) => {
   const method = req.body.method;
   const id = req.body.id || "1";
   
+  // Inicialização
+  if (method === 'initialize') {
+    console.log('Inicializando sessão');
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: {
+        capabilities: {
+          tools_provider: true
+        },
+        server_info: {
+          name: "Gotas Commerce Payment Gateway",
+          version: "1.0.0"
+        }
+      }
+    });
+  }
+  
   // Lista de ferramentas
   if (method === 'mcp.listTools') {
     console.log('Retornando lista de ferramentas');
@@ -133,6 +151,63 @@ app.post('/mcp', (req, res) => {
     error: {
       code: -32601,
       message: `Method not supported: ${method}`
+    }
+  });
+});
+
+// Endpoint MCP via GET (para debugging e compatibilidade)
+app.get('/mcp', (req, res) => {
+  console.log('GET /mcp - Query:', JSON.stringify(req.query));
+  
+  // Se não houver query method, retornamos informações básicas
+  if (!req.query.method) {
+    return res.json({
+      jsonrpc: "2.0",
+      result: {
+        server_info: {
+          name: "Gotas Commerce Payment Gateway",
+          version: "1.0.0"
+        }
+      }
+    });
+  }
+  
+  const method = req.query.method;
+  const id = req.query.id || "1";
+  
+  // Inicialização
+  if (method === 'initialize') {
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: {
+        capabilities: {
+          tools_provider: true
+        },
+        server_info: {
+          name: "Gotas Commerce Payment Gateway",
+          version: "1.0.0"
+        }
+      }
+    });
+  }
+  
+  // Lista de ferramentas
+  if (method === 'mcp.listTools') {
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: tools
+    });
+  }
+  
+  // Método não suportado via GET
+  return res.status(400).json({
+    jsonrpc: "2.0",
+    id: id,
+    error: {
+      code: -32601,
+      message: `Method not supported via GET: ${method}`
     }
   });
 });
