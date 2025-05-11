@@ -1,0 +1,163 @@
+/**
+ * Minimal MCP Server for Smithery
+ * Implements bare minimum for Smithery tool scanning
+ */
+
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Define tool list
+const tools = [
+  {
+    name: 'create-payment',
+    description: 'Creates a new payment in the Gotas Commerce API',
+    parameters: {
+      type: 'object',
+      properties: {
+        amount: {
+          type: 'number',
+          description: 'Payment amount (e.g., 100.50)'
+        },
+        currency: {
+          type: 'string',
+          description: 'Currency code (e.g., "USDT")'
+        },
+        return_url: {
+          type: 'string',
+          description: 'URL to redirect customer after payment'
+        }
+      },
+      required: ['amount', 'currency', 'return_url']
+    }
+  }
+];
+
+// Middleware
+app.use(express.json());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Accept', 'Mcp-Session-Id']
+}));
+
+// Simple logging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
+// Healthcheck
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// MCP endpoint - GET
+app.get('/mcp', (req, res) => {
+  // Handle initialize method
+  if (req.query.method === 'initialize') {
+    return res.json({
+      jsonrpc: "2.0",
+      id: req.query.id || "1",
+      result: {
+        protocolVersion: "2024-11-05",
+        serverInfo: {
+          name: "Gotas Commerce",
+          version: "1.0.0"
+        },
+        capabilities: {
+          toolExecution: true
+        },
+        tools: tools
+      }
+    });
+  }
+  
+  // Default to tool list
+  return res.json({
+    jsonrpc: "2.0",
+    id: req.query.id || "1",
+    result: {
+      tools: tools
+    }
+  });
+});
+
+// MCP endpoint - POST
+app.post('/mcp', (req, res) => {
+  const id = req.body.id || "1";
+  const method = req.body.method || "";
+  
+  // Handle initialize
+  if (method === 'initialize') {
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: {
+        protocolVersion: "2024-11-05",
+        serverInfo: {
+          name: "Gotas Commerce",
+          version: "1.0.0"
+        },
+        capabilities: {
+          toolExecution: true
+        },
+        tools: tools
+      }
+    });
+  }
+  
+  // Handle tools/list
+  if (method === 'tools/list') {
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: {
+        tools: tools
+      }
+    });
+  }
+  
+  // Handle tool execution
+  if (method === 'tools/run') {
+    const params = req.body.params || {};
+    const toolName = params.name;
+    
+    if (toolName === 'create-payment') {
+      return res.json({
+        jsonrpc: "2.0",
+        id: id,
+        result: {
+          payment_id: "pay_" + Math.random().toString(36).substring(2, 12),
+          status: "pending"
+        }
+      });
+    }
+    
+    // Tool not found
+    return res.json({
+      jsonrpc: "2.0",
+      id: id,
+      error: {
+        code: -32601,
+        message: `Tool not found: ${toolName}`
+      }
+    });
+  }
+  
+  // Method not supported
+  return res.json({
+    jsonrpc: "2.0",
+    id: id,
+    error: {
+      code: -32601,
+      message: `Method not supported: ${method}`
+    }
+  });
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Minimal MCP Server running on port ${port}`);
+});
